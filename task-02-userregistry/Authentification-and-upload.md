@@ -5,6 +5,8 @@ Notwendige Module:
 - `npm install jsonwebtoken` oder `bun add jsonwebtoken`
 - `npm install bcrypt` oder `bun add bcrypt`
 
+
+Um TypeScript zu vervenden:
 - `npm install --save-dev @types/express` oder `bun add @types/express`
 - `npm install --save-dev @types/cors` oder `bun add @types/cors`
 - `npm install --save-dev @types/jsonwebtoken` oder `bun add @types/jsonwebtoken`
