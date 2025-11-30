@@ -4,6 +4,7 @@ Notwendige Module:
 - `npm install cors`oder `bun add cors`
 - `npm install jsonwebtoken` oder `bun add jsonwebtoken`
 - `npm install bcrypt` oder `bun add bcrypt`
+- `npm install cookie-parser` oder `bun add cookie-parser`
 
 
 Um TypeScript zu vervenden:

@@ -1,0 +1,16 @@
+{
+    "Admin": [
+        "create_user",
+        "delete_user",
+        "update_user",
+        "view_user",
+        "assign_roles"
+    ],
+    "User": [
+        "view_user",
+        "update_own_profile"
+    ],
+    "Guest": [
+        "view_public_content"
+    ]
+}
