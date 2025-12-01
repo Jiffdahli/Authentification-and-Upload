@@ -1,5 +1,5 @@
 Notwendige Module:
-
+- `npm install`
 - `npm install express ejs` oder `bun add express ejs`
 - `npm install cors`oder `bun add cors`
 - `npm install jsonwebtoken` oder `bun add jsonwebtoken`
