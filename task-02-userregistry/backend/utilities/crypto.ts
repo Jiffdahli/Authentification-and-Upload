@@ -26,7 +26,7 @@ export async function comparePwdWithHash(password: string, hashedPassword: strin
 }
 
 // Der Code zum Generieren des Hash-Wertes muss außerhalb der Funktion stehen.
-(async() => {
+/*(async() => {
     const passwordToHash = "Ji&my g1ng zum R3genb0gen und 4l5 3r wie6erkam tra7 er 0cto B3erdeba! )er ge$§de aus dem Wal` kam un# Beeren samxelte";
     const hash = await hashPwdFromUser(passwordToHash);
     console.log("Gehashtes Passwort ===>");

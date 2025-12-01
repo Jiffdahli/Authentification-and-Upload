@@ -1,3 +1,6 @@
+// KORREKTUR: Die crypto.ts-Datei muss importiert werden, damit der darin enthaltene Code
+// (insbesondere die selbstausführende Funktion zum Hashen des Passworts) beim Serverstart ausgeführt wird.
+import './utilities/crypto';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
