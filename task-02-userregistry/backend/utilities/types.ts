@@ -22,7 +22,7 @@ export interface blocksType {
     extendASCII: boolean;
 }
 
-export interface Icrypto {
+export interface ICrypto {
     startCrypto(data: string): string;
     startDecrypto(data: string): string;
 }
