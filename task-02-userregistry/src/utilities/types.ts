@@ -10,12 +10,13 @@ export interfacce RequestWithUser extends Request {
     userdata?: User;
     userRights?: string[];
 }
-export interface User{
-    role: string [];
-    username: string;
-    password: string;
-    email: string;
+export interface User {
+  id: number;
+  username: string;
+  password: string; // gehashter String
+  createdAt: string;
 }
+
 
 export interface blocksType {
     index: number;

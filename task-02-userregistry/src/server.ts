@@ -1,11 +1,11 @@
 // KORREKTUR: Die crypto.ts-Datei muss importiert werden, damit der darin enthaltene Code
 // (insbesondere die selbstausführende Funktion zum Hashen des Passworts) beim Serverstart ausgeführt wird.
-import './utilities/crypto';
+import '../backend/utilities/crypto';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import loginRouter from './router/loginRouter';
-import dataRouter from './router/dataRouter';
+import loginRouter from '../backend/router/loginRouter';
+import dataRouter from '../backend/router/dataRouter';
 
 const app = express();
 const portClient: number = 4400;
