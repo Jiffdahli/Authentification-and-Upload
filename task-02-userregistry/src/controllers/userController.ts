@@ -1,87 +1,113 @@
 import { Request, Response } from "express";
 import { readUsers, writeUsers } from "../utilities/data";
-import { hashPassword, comparePassword } from "../utilities/cryptoHelper";
+import { hashPwdFromUser, comparePwdWithHash } from "../utilities/crypto";
 import { User } from "../utilities/types";
 
 /**
- * POST /register
- * Registriert einen neuen Benutzer
+ * POST /api/users
+ * Registriert einen neuen Benutzer (nur wenn eingeloggt).
  */
-export function registerUserController(req: Request, res: Response) {
-    const { username, password } = req.body;
+export async function registerUserController(req: Request, res: Response) {
+  const { username, password, email, roles } = req.body as {
+    username?: string;
+    password?: string;
+    email?: string;
+    roles?: string[];
+  };
 
-    // 1. Validierung
-    if (!username || !password) {
-        return res
-            .status(400)
-            .json({ error: "Username und Passwort müssen angegeben werden." });
-    }
+  if (!username || !password || !email) {
+    return res
+      .status(400)
+      .json({ error: "Username, Passwort und E-Mail sind erforderlich." });
+  }
 
-    // 2. User-Datenbank laden
-    const users = readUsers();
+  const cleanUsername = username.trim();
 
-    // 3. Prüfen ob Username bereits existiert
-    const existingUser = users.find((u: User) => u.username === username);
-    if (existingUser) {
-        return res
-            .status(409)
-            .json({ error: "Benutzer existiert bereits." });
-    }
+  const users = readUsers();
 
-    // 4. Passwort hashen
-    const hashed = hashPassword(password);
+  if (users[cleanUsername]) {
+    return res.status(409).json({ error: "Benutzer existiert bereits." });
+  }
 
-    // 5. Neuen User erstellen
-    const newUser: User = {
-        id: Date.now(),
-        username,
-        password: hashed,
-    };
+  const hashedPassword = await hashPwdFromUser(password);
 
-    // 6. Speichern in "Datenbank"
-    users.push(newUser);
-    writeUsers(users);
+  const newUser: User = {
+    username: cleanUsername,
+    password: hashedPassword,
+    email,
+    roles: Array.isArray(roles) && roles.length ? roles : ["user"],
+  };
 
-    // 7. Erfolg zurückgeben
-    res.status(201).json({
-        message: "Benutzer erfolgreich registriert.",
-        user: { id: newUser.id, username: newUser.username }
-    });
+  users[cleanUsername] = newUser;
+  writeUsers(users);
+
+  return res.status(201).json({
+    message: "Benutzer erfolgreich registriert.",
+    user: {
+      username: newUser.username,
+      email: newUser.email,
+      roles: newUser.roles,
+    },
+  });
 }
-
 
 /**
- * POST /login
- * Loggt einen User ein
+ * POST /api/login
+ * Loggt einen Benutzer ein (setzt Cookie).
  */
-export function loginUserController(req: Request, res: Response) {
-    const { username, password } = req.body;
+export async function loginUserController(req: Request, res: Response) {
+  const { username, password } = req.body as {
+    username?: string;
+    password?: string;
+  };
 
-    // 1. Validierung
-    if (!username || !password) {
-        return res
-            .status(400)
-            .json({ error: "Username und Passwort müssen angegeben werden." });
-    }
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ error: "Username und Passwort sind erforderlich." });
+  }
 
-    // 2. User-Datenbank lesen
-    const users = readUsers();
+  const cleanUsername = username.trim();
+  const users = readUsers();
+  const user = users[cleanUsername];
 
-    // 3. User suchen
-    const user = users.find((u: User) => u.username === username);
-    if (!user) {
-        return res.status(401).json({ error: "Ungültige Anmeldedaten." });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Ungültige Anmeldedaten." });
+  }
 
-    // 4. Passwort vergleichen
-    const passwordCorrect = comparePassword(password, user.password);
-    if (!passwordCorrect) {
-        return res.status(401).json({ error: "Ungültige Anmeldedaten." });
-    }
+  const ok = await comparePwdWithHash(password, user.password);
+  if (!ok) {
+    return res.status(401).json({ error: "Ungültige Anmeldedaten." });
+  }
 
-    // 5. Erfolg
-    res.status(200).json({
-        message: "Login erfolgreich",
-        user: { id: user.id, username: user.username }
-    });
+  // Cookie setzen (einfache Cookie-Auth, ohne JWT)
+  res.cookie("username", cleanUsername, {
+    httpOnly: true,
+    sameSite: "lax",
+  });
+
+  return res.status(200).json({
+    message: "Login erfolgreich.",
+    user: {
+      username: user.username,
+      email: user.email,
+      roles: user.roles,
+    },
+  });
 }
+
+/**
+ * GET /api/users
+ * Gibt alle Benutzer zurück (nur wenn eingeloggt).
+ */
+export function listUsersController(req: Request, res: Response) {
+  const usersRecord = readUsers();
+  const usersList = Object.values(usersRecord).map((u) => ({
+    username: u.username,
+    email: u.email,
+    roles: u.roles,
+  }));
+
+  return res.status(200).json(usersList);
+}
+

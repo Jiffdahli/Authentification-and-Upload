@@ -5,16 +5,15 @@ export interface TokenWithUser {
     username: string;
 }
 
-export interfacce RequestWithUser extends Request {
-    username?: string
-    userdata?: User;
-    userRights?: string[];
+export interface RequestWithUser extends Request {
+  user?: User;
 }
+
 export interface User {
-  id: number;
   username: string;
-  password: string; // gehashter String
-  createdAt: string;
+  password: string; // bcrypt-Hash
+  email: string;
+  roles: string[];
 }
 
 

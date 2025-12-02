@@ -1,47 +1,37 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { secretKey, tokens} from './data';
-import { RequestWithUser } from './types';
-import { getUserData} from './generalFunctions';
+import { Request, Response, NextFunction } from "express";
+import { RequestWithUser } from "./types";
+import { readUsers } from "./data";
 
-// Middleware to authenticate JWT token
-export function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction) {
-    const token: any = req.cookie.token
-    if (!token) {
-        return res.sendStatus(401);
-    }
+/**
+ * Einfaches Logging-Middleware (optional).
+ */
+export function logRequest(req: Request, res: Response, next: NextFunction) {
+  console.log(`${req.method} ${req.url}`);
+  next();
+}
 
-    jwt.verify(token, secretKey, (err: any, decoded: any) => {
-        if (err) {
-            return res.sendStatus(401);
-        }
-        const payload = decoded as JwtPayload;
-        if (token.lenght > 0 &&
-            tokens.find(tokenUser => tokenUser.token === token && payload.username === tokenUser.username) !== undefined) {
-                req.usermane = payload.username;
-                req.userdata = getUserData(req.username as string);
-                req.userRights = getUserRights(req.userdata?.role as string);
-                next();
-        }
-        return res.sendStatus(401);
-            });
-    }
+/**
+ * Auth-Middleware: prüft, ob ein gültiger Benutzer-Cookie gesetzt ist.
+ * Erwartet ein Cookie `username` mit einem existierenden Nutzer.
+ */
+export function requireAuth(
+  req: RequestWithUser,
+  res: Response,
+  next: NextFunction
+) {
+  const username = (req as any).cookies?.username; // cookie-parser fügt `cookies` hinzu
 
-    /**
-     * @param requiredRight
-     * @returns
-     */
+  if (!username || typeof username !== "string") {
+    return res.sendStatus(401);
+  }
 
-    export function ChekRight(requiredRight: string) {
-        return (req: RequestWithUser, res: Response, next: NextFunction) => {
-            console.log('CHECK RIGHTS: ',req.userRights);
-            console.log('RIGHTS:', req.userRights);
+  const users = readUsers();
+  const user = users[username];
 
-            if (req.userRights?.includes(requiredRight)) {
-                next();
-            } else {
-                console.log('401 ===> INSUFFICIENT RIGHTS');
-                return res.sendStatus(401);
-            }
-    }
+  if (!user) {
+    return res.sendStatus(401);
+  }
+
+  req.user = user;
+  next();
 }
